@@ -1,0 +1,17 @@
+/* Shared button variants. Keep page selectors limited to placement and sizing. */
+.button{font:inherit;font-weight:700;min-height:44px;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;transition:filter .15s,opacity .15s}
+.button.button--primary,.button.button--join,.button.button--message{background:var(--accent);color:#081411}
+.button.button--leave{background:linear-gradient(115deg,#c63b43 0%,#79232b 48%,#0b0c0e 100%);color:#fff}
+.button.button--secondary,.button.button--stepper{background:#252d2d;color:#e3ece8}
+.button.button--hosting,.button.button--full{background:#252d2d;color:#b5bfbb}
+.button.button--quiet,.button.button--icon{background:transparent;color:#b6c7bf;padding:8px}
+.button.button--outline{background:transparent;color:#98dcc8;border:1px solid #416b5e;border-radius:999px;font-size:12px}
+.button.button--nav{background:transparent;color:#9ba8a3}
+.button.button--nav.active{background:var(--accent);color:#071410}
+.button.button--card{background:transparent;color:inherit;text-align:left;padding:0;border-radius:0}
+.button.button--conversation{background:var(--surface);color:#f5f7f5;text-align:left;border-radius:0}
+.button.button--plan{background:var(--surface);color:inherit;text-align:left}
+.button.button--stepper{padding:0;width:42px;min-height:42px;font-size:21px}
+.button:hover:not(:disabled){filter:brightness(1.08)}
+.button:disabled{opacity:.55;cursor:default}
+.button:focus-visible{outline:2px solid #d5e769;outline-offset:3px}

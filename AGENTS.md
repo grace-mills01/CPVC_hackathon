@@ -11,3 +11,9 @@
 - Do not include unrelated local changes in commits.
 - Accuretly add files to git.ignore if needed
 - Chekout main before creating a new feature branch and create a pull request with a meaningful description and SS of changes to the app if applicable
+
+## Shared button styles
+
+- Use `src/components/Button.jsx` with a semantic variant for every current and future button. Follow `BUTTON_STYLES.md`.
+- Define button appearance in `src/styles/buttons.css`; page styles control only layout. Do not override action colors by page, position, or inline styles.
+- Use `join`, `leave`, and `message` variants consistently across cards, activity details, and any future entry points.
