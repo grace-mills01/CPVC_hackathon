@@ -1,0 +1,18 @@
+import React from 'react';
+
+const paths = {
+ calendar: <><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></>,
+ pin: <><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/></>,
+ people: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3H3Zm13-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v2h-3"/></>,
+ cost: <><circle cx="12" cy="12" r="9"/><path d="M15 8h-5v4h4v4H9m3-10v2m0 8v2"/></>,
+ bag: <><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></>,
+ spark: <><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2Z"/></>
+};
+function Icon({name}) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>; }
+function Hero({game,children}) {return <div className={`activity-hero ${/volley|beach/i.test(game.sport)?'activity-beach':''}`} style={game.image_url?{backgroundImage:`linear-gradient(0deg,#0c1011,transparent),url("${game.image_url}")`}:undefined}><span className="activity-category">{game.sport}</span>{children}<div className="activity-tags">{game.skill_level&&<span className="activity-skill">{game.skill_level.replaceAll('_',' ')}</span>}<span>Come meet your people</span></div></div>}
+function DetailRow({icon,title,children}) {return <div className="activity-info"><Icon name={icon}/><div><strong>{title}</strong>{children&&<div className="activity-subtext">{children}</div>}</div></div>}
+export function ActivityCard({game,count,onOpen,actions}) {return <article className="activity-card"><button className="activity-open" onClick={onOpen}><Hero game={game}><h3>{game.title}</h3></Hero><div className="activity-card-summary"><span>{game.venue}</span><span>{new Date(game.starts_at).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · {count} / {game.capacity} spots filled</span></div></button><div className="activity-card-actions row">{actions}</div></article>}
+export function ActivityDetail({game,count,host,onBack,actions}) {
+ const start=new Date(game.starts_at);
+ return <section className="activity-detail"><button className="activity-back quiet" onClick={onBack}>← Back to activities</button><article className="activity-detail-card"><Hero game={game}><h2>{game.title}</h2></Hero><div className="activity-detail-body"><div className="activity-host">{host?.avatar_url?<img src={host.avatar_url} alt=""/>:<span className="activity-host-avatar">{(host?.display_name||'H').slice(0,1)}</span>}<div><span>Hosted by</span><strong>{host?.display_name||'Activity host'}</strong><span>{host?.bio||'ToGo community member'}</span></div></div><div className="activity-info-list"><DetailRow icon="calendar" title={start.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}>{start.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}{game.ends_at&&` – ${new Date(game.ends_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}`}</DetailRow><DetailRow icon="pin" title={game.venue}/><DetailRow icon="people" title={`${count} / ${game.capacity} spots filled`}>{Math.max(0,game.capacity-count)} spots remaining</DetailRow><DetailRow icon="cost" title="Free to join">No activity fee on ToGo</DetailRow><DetailRow icon="bag" title="What to bring">{game.what_to_bring||'Check with your host before heading out.'}</DetailRow><DetailRow icon="spark" title="What to expect">{game.description||'Your host hasn’t added details yet.'}</DetailRow></div><div className="row activity-detail-actions">{actions}</div></div></article></section>
+}
