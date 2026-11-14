@@ -1,5 +1,5 @@
-# Database outline
+# Supabase setup
 
-The proposed entities and relationships are described in [PROJECT_PLAN.md](../PROJECT_PLAN.md#database-outline). JavaScript shapes live in `src/lib/models.js`.
+Create a Supabase project, then run `migrations/20261114000000_initial.sql` in its SQL editor. In Authentication settings, configure the production site URL and allowed redirect URLs. Copy the project URL and publishable key into `.env` using `.env.example`; never place a secret/service-role key in the browser. Email confirmation is enabled according to your project's Auth settings.
 
-No migration or live database is included yet. Before creating tables, implement the access policies and transactional join/capacity rules described in the plan together with the schema, and test permissions and concurrent joins. Never expose a Supabase secret or service-role key to the browser. Migrations will live in `migrations/` and database tests in `tests/`.
+The migration creates profiles, games, participant rosters, and messages with row-level security. The create/join/leave functions use transactions; joining locks the game row to protect capacity. Test these policies and concurrent joins against a real Supabase instance before production use. This first iteration does not yet provide host cancellation, editing, or account deletion.
