@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 const sports = ['Basketball','Volleyball','Beach volleyball','Soccer','Futsal','Pickleball','Badminton','Racquetball','Dodgeball','Flag football','Frisbee','Running','Swimming','Climbing','Study group','Coffee','Food and dining','Downtown hangout','Arts and culture','Other social'];
 const venues = ['Recreation Center Main Gym','Recreation Center Rec Gym','Recreation Center North Gym','Recreation Center South Gym','Recreation Center MAC','Racquetball Courts','Sand Volleyball Courts','Indoor Track','Lap Pool','Climbing Park','Sports Complex Upper Fields','Sports Complex Lower Fields','Pickleball Courts','Futsal Courts','Doerr Family Field','Kennedy Library','University Union','Downtown San Luis Obispo','Other / see details'];
