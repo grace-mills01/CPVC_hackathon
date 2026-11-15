@@ -33,3 +33,16 @@ Deploy it with `supabase functions deploy sync-calendar-feed` (JWT verification 
 4. Caches picks for 30 minutes unless inputs change, and creates notifications for strong new matches and nearly-full activities.
 
 To turn on AI-written reasons, create a free key at console.groq.com, then in Supabase go to **Edge Functions → Secrets** and add `GROQ_API_KEY`. Optional: `GROQ_MODEL` to force a model. By default it tries `openai/gpt-oss-120b`, then `openai/gpt-oss-20b`, then asks Groq which chat models are available, since Groq retires models over time. The LLM receives the user's first name, interests, goals, and activity details only.
+
+## Cal Poly–only sign-up
+
+`migrations/20261115020000_calpoly_signup.sql` adds `public.hook_calpoly_signup`, a Supabase Auth **Before User Created** hook. It allows `@calpoly.edu` emails, plus anything in `public.signup_allowlist`, and rejects every other sign-up with "ToGo is for Cal Poly students. Please sign up with your @calpoly.edu email." Existing accounts keep working. Because email confirmation is on, a new account proves the person owns that Cal Poly inbox.
+
+**Turn it on:** Dashboard → **Authentication → Hooks → Before User Created** → choose **Postgres** → function `public.hook_calpoly_signup` → Save. To turn it off, disable the hook there.
+
+**Allow a teammate, judge, or test domain** (SQL editor):
+
+```sql
+insert into public.signup_allowlist (entry, note) values ('judge@gmail.com', 'CPVC judge');
+insert into public.signup_allowlist (entry, note) values ('@example.com', 'test accounts');
+```
