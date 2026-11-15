@@ -21,4 +21,4 @@ Use `src/components/Button.jsx` for every button. Choose a semantic `variant` ra
 
 Page classes may set layout, width, spacing, and alignment. Never override a button variant’s background or text color with a page selector, `:first-child`, or inline style. New buttons must reuse an existing variant or add a semantic variant here and in buttons.css. Preserve disabled and focus states. Keep join, leave, and message actions stacked in activity action groups.
 
-`send`: circular lime send control in a group conversation.
+`send`: circular light blue send control in a group conversation.
