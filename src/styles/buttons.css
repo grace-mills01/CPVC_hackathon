@@ -16,4 +16,4 @@
 .button:disabled{opacity:.55;cursor:default}
 .button:focus-visible{outline:2px solid #d5e769;outline-offset:3px}
 
-.button--send{background:#d4eb35;color:#20270b;border-radius:50%}.button--send:hover:enabled{background:#e1f55e}.button--send:disabled{opacity:.5}
+.button--send{background:#b9ddf2;color:#142d3c;border-radius:50%}.button--send:hover:enabled{background:#d1eafa}.button--send:disabled{opacity:.5}
