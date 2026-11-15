@@ -19,6 +19,7 @@ Use `src/components/Button.jsx` for every button. Choose a semantic `variant` ra
 | conversation | Open conversation row |
 | plan | Open profile plan or matching-settings row |
 | chip | Toggle pill: interests, weekdays, calendar app, filters; set `aria-pressed` |
+| notice | Open a notification row; add `unread` for new ones |
 | choice | Toggle tile with an icon: onboarding goals; set `aria-pressed` |
 
 Page classes may set layout, width, spacing, and alignment. Never override a button variant’s background or text color with a page selector, `:first-child`, or inline style. New buttons must reuse an existing variant or add a semantic variant here and in buttons.css. Preserve disabled and focus states. Keep join, leave, and message actions stacked in activity action groups.

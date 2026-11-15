@@ -4,6 +4,8 @@ import { consumeGoogleReturn, loadOwnProfile, refreshCalendarFeedIfStale } from 
 import Onboarding from './Onboarding.jsx';
 
 export const EDIT_PREFERENCES_EVENT = 'togo:edit-preferences';
+/** Fired after interests, goals, or availability are saved, so picks can refresh. */
+export const PREFERENCES_SAVED_EVENT = 'togo:preferences-saved';
 
 /** Opens one onboarding step from anywhere: 'interests' or 'calendar'. */
 export function editPreferences(step = 'interests') {
@@ -47,7 +49,7 @@ export default function OnboardingGate({ children }) {
     profile={profile}
     returnedFromGoogle={returnedFromGoogle}
     editStep={editStep}
-    onDone={p => { if (p) setProfile(p); setEditStep(null); setReturnedFromGoogle(false); }}
+    onDone={p => { if (p) { setProfile(p); window.dispatchEvent(new Event(PREFERENCES_SAVED_EVENT)); } setEditStep(null); setReturnedFromGoogle(false); }}
   />;
   if (!screen) return children;
   // First-time setup replaces the app; edits open on top so closing returns to the same page.
