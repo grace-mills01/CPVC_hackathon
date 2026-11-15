@@ -6,7 +6,7 @@ import {activityBadges} from '../lib/badges.js';
 import {badgeUnlocks, readBadgeHistory} from '../lib/badgeUnlocks.js';
 import './badge-unlock.css';
 
-export function BadgeReveal({badge, remaining = 1, onContinue, onClose}) {
+export function BadgeReveal({badge, remaining = 1, onContinue, onClose, onGallery}) {
   const dialog = useRef(null);
   const continueButton = useRef(null);
   useEffect(() => {
@@ -32,31 +32,26 @@ export function BadgeReveal({badge, remaining = 1, onContinue, onClose}) {
       <p className="badge-reveal-eyebrow">NEW BADGE UNLOCKED</p>
       <div className="badge-reveal-art"><div className="badge-reveal-ring"/><div className="badge-reveal-ring badge-reveal-ring-outer"/><BadgeEmblem badge={badge}/></div>
       <div className="badge-reveal-copy"><span className="badge-reveal-detail">{badge.detail}</span><h2 id="badge-reveal-title">{badge.name}</h2><p id="badge-reveal-description">{badge.description}</p><p className="badge-reveal-saved">Added to your profile collection.</p></div>
-      <div className="badge-reveal-actions"><Button variant="primary" type="button" ref={continueButton} onClick={onContinue}>{remaining > 1 ? 'Next badge →' : 'Keep going →'}</Button>{remaining > 1 && <p>{remaining} new badges to celebrate</p>}</div>
+      <div className="badge-reveal-actions"><Button variant="primary" type="button" ref={continueButton} onClick={remaining > 1 ? onContinue : onGallery}>{remaining > 1 ? 'Next badge →' : 'See gallery →'}</Button>{remaining > 1 && <><Button variant="secondary" type="button" onClick={onGallery}>See gallery →</Button><p>{remaining} new badges to celebrate</p></>}</div>
     </div>
   </dialog>, document.body);
 }
 
-export default function BadgeUnlockCelebration({games, roster, userId}) {
+export default function BadgeUnlockCelebration({games, roster, userId, active = false, onGallery}) {
   const seen = useRef(undefined);
   const [queue, setQueue] = useState([]);
-  const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30000);
-    const wake = () => {if (!document.hidden) setNow(new Date());};
-    document.addEventListener('visibilitychange', wake);
-    return () => {clearInterval(timer); document.removeEventListener('visibilitychange', wake);};
-  }, []);
-  useEffect(() => {
+    // Leave newly earned badges pending until the next profile visit.
+    if (!active) return;
     const key = `togo:badge-reveals:v1:${userId}`;
     if (seen.current === undefined) {
       try {seen.current = readBadgeHistory(window.localStorage, key);} catch {seen.current = null;}
     }
-    const {fresh, seen: next} = badgeUnlocks(activityBadges(games, roster, userId, now).earned, seen.current);
+    const {fresh, seen: next} = badgeUnlocks(activityBadges(games, roster, userId, new Date()).earned, seen.current);
     seen.current = next;
     try {window.localStorage.setItem(key, JSON.stringify(next));} catch { /* Session memory still prevents repeats when storage is unavailable. */ }
     if (fresh.length) setQueue(current => [...current, ...fresh]);
-  }, [games, roster, userId, now]);
-  if (!queue.length) return null;
-  return <BadgeReveal badge={queue[0]} remaining={queue.length} onContinue={() => setQueue(current => current.slice(1))} onClose={() => setQueue([])}/>;
+  }, [games, roster, userId, active]);
+  if (!active || !queue.length) return null;
+  return <BadgeReveal badge={queue[0]} remaining={queue.length} onContinue={() => setQueue(current => current.slice(1))} onClose={() => setQueue([])} onGallery={() => {setQueue([]); onGallery();}}/>;
 }
