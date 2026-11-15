@@ -17,3 +17,9 @@
 - Use `src/components/Button.jsx` with a semantic variant for every current and future button. Follow `BUTTON_STYLES.md`.
 - Define button appearance in `src/styles/buttons.css`; page styles control only layout. Do not override action colors by page, position, or inline styles.
 - Use `join`, `leave`, and `message` variants consistently across cards, activity details, and any future entry points.
+
+## Production publishing
+
+- The GitHub `main` branch is the source of truth for the live ToGo Site.
+- A change requested for the live app is complete only after publishing the latest committed `origin/main` with the Sites workflow and verifying deployment success. A GitHub push alone does not publish this Site.
+- Preserve Site identity `appgprj_6af8a7f588e481919a944d61b813243f` and its audience. Follow DEPLOYMENT.md.
