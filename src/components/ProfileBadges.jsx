@@ -37,6 +37,9 @@ const drawings = {
   book: <><path d="M24 14c-5-5-12-5-17-3v25c6-2 12-1 17 3 5-4 11-5 17-3V11c-5-2-12-2-17 3v25M12 18l7 2m10 0 7-2"/></>,
   compass: <><circle cx="24" cy="24" r="17"/><path d="m31 17-4 10-10 4 4-10Z"/></>,
 };
+export function BadgeEmblem({badge}) {
+  return <div className={`achievement achievement--${badge.tone} badge-emblem-only`} aria-hidden="true"><div className="achievement-emblem"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">{drawings[badge.icon] || drawings.spark}</svg><span>✓</span></div></div>;
+}
 export default function ProfileBadges({games, roster, userId}) {
   const {earned} = activityBadges(games, roster, userId);
   return <section className="profile-badges" aria-labelledby="profile-badges-title">
