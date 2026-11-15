@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from './Button.jsx';
 import { activityBadges } from '../lib/badges.js';
 import './profile-badges.css';
 
@@ -40,14 +41,14 @@ const drawings = {
 export function BadgeEmblem({badge}) {
   return <div className={`achievement achievement--${badge.tone} badge-emblem-only`} aria-hidden="true"><div className="achievement-emblem"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">{drawings[badge.icon] || drawings.spark}</svg><span>✓</span></div></div>;
 }
-export default function ProfileBadges({games, roster, userId}) {
+export default function ProfileBadges({games, roster, userId, gallery = false, onShowAll}) {
   const {earned} = activityBadges(games, roster, userId);
   return <section className="profile-badges" aria-labelledby="profile-badges-title">
-    <div className="profile-badges-heading"><div><h3 id="profile-badges-title">A little proof you showed up.</h3><p>Your experiences, collected.</p></div><span className="profile-badges-count">{earned.length} earned</span></div>
-    {earned.length ? <ul className="profile-badges-grid">{earned.map(badge => <li className={`achievement achievement--${badge.tone}`} key={badge.id}>
+    <div className="profile-badges-heading"><div><h3 id="profile-badges-title">A little proof you showed up.</h3><p>Your experiences, collected.</p></div><div className="profile-badges-actions"><span className="profile-badges-count">{earned.length} earned</span>{!gallery && earned.length > 0 && <Button variant="secondary" onClick={onShowAll}>Show all <span aria-hidden="true">→</span></Button>}</div></div>
+    {earned.length ? <ul className={gallery ? "profile-badges-grid" : "profile-badges-row"} aria-label={gallery ? "All earned badges" : "Earned badges"} tabIndex={gallery ? undefined : 0}>{earned.map(badge => <li className={`achievement achievement--${badge.tone}`} key={badge.id}>
       <div className="achievement-emblem" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">{drawings[badge.icon]}</svg><span>✓</span></div>
-      <h4>{badge.name}</h4><span className="achievement-detail">{badge.detail}</span><p>{badge.description}</p>
+      <h4>{badge.name}</h4><span className="achievement-detail">{badge.detail}</span>{gallery && <p>{badge.description}</p>}
     </li>)}</ul> : <div className="profile-badges-empty"><span aria-hidden="true">✦</span><h4>Your story starts with one activity.</h4><p>Complete your first activity to earn its emblem. Keep exploring for hosting, hours, and a few unexpected achievements.</p></div>}
-    <details className="profile-badges-guide"><summary>How badges are earned</summary><p>Collect an emblem for every new activity type, every 50 hours, every 10 activities hosted, and every 15 activities participated in. Hosting also counts as participation. Earn crowd badges at 5, 10, 25, 50, and 100 people.</p><p>Discover special badges for five study sessions, five activity types, starts after 11 pm or before 5 am, three types in one day, five activities with the same person, five venues, or both days of one weekend. Calendar and time achievements use Pacific time.</p><p>Only completed activities count. Hours require a recorded end time; attendance and crowd size use the saved roster.</p></details>
+    {gallery && <details className="profile-badges-guide"><summary>How badges are earned</summary><p>Collect an emblem for every new activity type, every 50 hours, every 10 activities hosted, and every 15 activities participated in. Hosting also counts as participation. Earn crowd badges at 5, 10, 25, 50, and 100 people.</p><p>Discover special badges for five study sessions, five activity types, starts after 11 pm or before 5 am, three types in one day, five activities with the same person, five venues, or both days of one weekend. Calendar and time achievements use Pacific time.</p><p>Only completed activities count. Hours require a recorded end time; attendance and crowd size use the saved roster.</p></details>}
   </section>;
 }
