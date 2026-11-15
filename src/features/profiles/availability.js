@@ -41,27 +41,76 @@ export function validateWeeklyEntry({ weekdays, start_time, end_time }) {
   return '';
 }
 
-export const GOOGLE_FREEBUSY_SCOPE = 'https://www.googleapis.com/auth/calendar.freebusy';
+// Free/busy times, plus the list of calendars (names only, never events) so we
+// can check every calendar the user shows, not just their main one.
+export const GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/calendar.freebusy',
+  'https://www.googleapis.com/auth/calendar.calendarlist.readonly'
+].join(' ');
+
+const GOOGLE_API = 'https://www.googleapis.com/calendar/v3';
+// Google's built-in public calendars (holidays, birthdays, sports, moon phases)
+// end in @group.v.calendar.google.com and never mean the user is busy.
+// Calendars people create end in @group.calendar.google.com and are kept.
+const SKIP_CALENDAR = /@group\.v\.calendar\.google\.com$/i;
+
+/** Calendar IDs to check: every calendar the user has turned on, except holidays/birthdays. */
+async function listGoogleCalendars(accessToken, fetchImpl) {
+  try {
+    const response = await fetchImpl(`${GOOGLE_API}/users/me/calendarList?minAccessRole=freeBusyReader&maxResults=250`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!response.ok) return ['primary']; // permission not granted: fall back to the main calendar
+    const { items = [] } = await response.json();
+    const ids = items
+      .filter(c => c.primary || (c.selected && !c.hidden && !c.deleted && !SKIP_CALENDAR.test(c.id)))
+      .map(c => c.primary ? 'primary' : c.id);
+    return ids.length ? [...new Set(ids)] : ['primary'];
+  } catch {
+    return ['primary'];
+  }
+}
+
+function mergeBlocks(blocks) {
+  const sorted = blocks.map(b => [new Date(b.start).getTime(), new Date(b.end).getTime()]).sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const [s, e] of sorted) {
+    const last = merged[merged.length - 1];
+    if (last && s <= last[1]) last[1] = Math.max(last[1], e);
+    else merged.push([s, e]);
+  }
+  return merged.map(([s, e]) => ({ starts_at: new Date(s).toISOString(), ends_at: new Date(e).toISOString() }));
+}
 
 /**
- * Reads busy times from the user's primary Google Calendar. Needs the OAuth
- * access token Supabase returns right after Google sign-in (session.provider_token).
+ * Reads busy times from all of the user's visible Google calendars. Needs the
+ * OAuth access token Supabase returns right after Google sign-in (session.provider_token).
+ * Returns { blocks, calendars } where calendars is how many were checked.
  */
 export async function fetchGoogleBusy(accessToken, { from = new Date(), days = 28, fetchImpl = fetch } = {}) {
-  const response = await fetchImpl('https://www.googleapis.com/calendar/v3/freeBusy', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      timeMin: from.toISOString(),
-      timeMax: new Date(from.getTime() + days * DAY_MS).toISOString(),
-      items: [{ id: 'primary' }]
-    })
-  });
-  if (!response.ok) throw new Error('Couldn’t read your Google Calendar. Try connecting again.');
-  const data = await response.json();
-  const calendar = data.calendars?.primary;
-  if (calendar?.errors?.length) throw new Error('Google Calendar didn’t share your availability.');
-  return (calendar?.busy || []).map(b => ({ starts_at: new Date(b.start).toISOString(), ends_at: new Date(b.end).toISOString() }));
+  const ids = await listGoogleCalendars(accessToken, fetchImpl);
+  const busy = [];
+  let readable = 0;
+  for (let i = 0; i < ids.length; i += 50) { // Google allows 50 calendars per request
+    const response = await fetchImpl(`${GOOGLE_API}/freeBusy`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        timeMin: from.toISOString(),
+        timeMax: new Date(from.getTime() + days * DAY_MS).toISOString(),
+        items: ids.slice(i, i + 50).map(id => ({ id }))
+      })
+    });
+    if (!response.ok) throw new Error('Couldn’t read your Google Calendar. Try connecting again.');
+    const data = await response.json();
+    for (const calendar of Object.values(data.calendars || {})) {
+      if (calendar.errors?.length) continue;
+      readable++;
+      busy.push(...(calendar.busy || []));
+    }
+  }
+  if (!readable) throw new Error('Google Calendar didn’t share your availability.');
+  return { blocks: mergeBlocks(busy), calendars: readable };
 }
 
 /**
