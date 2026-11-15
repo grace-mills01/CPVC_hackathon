@@ -16,3 +16,9 @@ For every live-app change:
 6. Report the deployed URL and any verification limits. A push or saved version alone is incomplete.
 
 Fully automatic deployment of changes made outside Codex still needs a supported persistent hosting integration. Short-lived Site credentials must not be stored in GitHub Actions or committed.
+
+## Password reset email setup
+
+In Supabase Authentication → URL Configuration, set the Site URL to the live ToGo URL and allow `https://togo-social-calpoly.cometherring2.chatgpt.site/?reset=1` as a redirect URL. Add the equivalent local URL when testing locally. The app sends this URL through `resetPasswordForEmail`; the default Supabase Reset Password email template must retain its `{{ .ConfirmationURL }}` link so Supabase verifies the token before redirecting. Custom templates should preserve that verification flow.
+
+The recovery screen uses the existing application entry point (`?reset=1`) so static hosting needs no new route rewrite. Test with a real account: request email, open the newest link, reject mismatched passwords, submit matching passwords, then sign out and sign in with the new password. Also check expired or reused links. Email delivery and redirect configuration must be verified against the deployed Supabase project; local unit tests do not send email.
