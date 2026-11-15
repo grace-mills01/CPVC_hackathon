@@ -32,3 +32,4 @@ Page classes may set layout, width, spacing, and alignment. Never override a but
 `schedule-day`: select a day in the calendar week strip; set `aria-pressed` and `aria-current="date"` for today.
 
 `schedule-event`: open an activity from its positioned calendar time block.
+`calendar-day`: select a date in an event calendar; use `aria-pressed` and `aria-current="date"` for today.
