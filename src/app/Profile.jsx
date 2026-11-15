@@ -1,3 +1,4 @@
+import {eventViews} from '../lib/eventViews.js';
 import { coverColor } from '../lib/covers.js';
 import Button from '../components/Button.jsx';
 import React from 'react';
@@ -5,8 +6,9 @@ import ProfileBadges from '../components/ProfileBadges.jsx';
 import { profileActivity } from '../lib/profile.js';
 import { editPreferences } from '../features/profiles/OnboardingGate.jsx';
 
-export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover, onShowBadges}) {
+export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover, onShowBadges, onShowEvents}) {
   const {upcoming, sports, sessions} = profileActivity(games, roster, userId);
+  const views=eventViews(games,roster,userId);
   const initials = profile.display_name.trim().split(/\s+/).slice(0,2).map(word => word[0]).join('');
   return <section className="profile-page" aria-label="Your profile">
     <Button variant="icon" className="profile-settings" onClick={onEdit} aria-label="Edit profile">
@@ -21,6 +23,11 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
     <dl className="profile-stats">
       {[[sports,'Activities tried'],[sessions,'Sessions']].map(([value,label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
     </dl>
+    <section className="profile-event-links" aria-label="Your events">{[
+      ['events-attending','Events attending',views.attending.length+' upcoming'],
+      ['events-hosting','Events hosting',views.hosting.length+' upcoming'],
+      ['activity-log','Activity log',views.past.length+' past activities']
+    ].map(([route,title,detail])=><Button key={route} variant="plan" className="profile-plan" onClick={()=>onShowEvents(route)}><span className="profile-plan-copy"><strong>{title}</strong><span>{detail}</span></span><span className="profile-plan-arrow" aria-hidden="true">›</span></Button>)}</section>
     <ProfileBadges games={games} roster={roster} userId={userId} onShowAll={onShowBadges}/>
     <section className="profile-upcoming" aria-labelledby="profile-upcoming-title">
       <h3 id="profile-upcoming-title">Upcoming</h3>
