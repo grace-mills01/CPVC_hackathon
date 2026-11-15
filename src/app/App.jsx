@@ -3,6 +3,7 @@ import ScheduleCalendar from '../features/calendar/ScheduleCalendar.jsx';
 import EventCalendar,{ActivityLog} from './EventCalendar.jsx';
 import {eventViews,profileRoutes,pageFromHash} from '../lib/eventViews.js';
 import {cropBanner, defaultFrame} from '../lib/bannerCrop.js';
+import EditActivity from './EditActivity.jsx';
 import PasswordReset from './PasswordReset.jsx';
 import CoverPhoto from './CoverPhoto.jsx';
 import { randomCoverColor } from '../lib/covers.js';

@@ -30,3 +30,7 @@ Before publishing code that uploads activity photos, apply `supabase/migrations/
 Applied to production project `qdgzzbczlunkumerlbbh` on November 14, 2026, in one transaction, including the original migration SQL in `supabase_migrations.schema_migrations` under version `20261115000000` and name `activity_covers`. PostgREST schema reload was requested. Verified both `games` cover fields, the public `activity-covers` bucket (5 MB; JPEG, PNG, WebP), all three storage policies, and the eight-argument `create_game` RPC. No existing game rows were modified.
 
 Run `supabase/tests/activity_covers_verification.sql` in the SQL Editor after applying the migration. Every check should return `true`. This inspects database configuration; an authenticated browser upload and event creation remain a separate end-to-end check.
+
+## Host activity editing
+
+Apply `supabase/migrations/20261115050000_host_activity_edit.sql` before deploying the editor. This adds a host-only `update_game` RPC; it saves the activity and its group-chat change summary in one transaction. Run `supabase/tests/host_activity_edit.sql` against a migrated development database to check ownership, roster capacity, unchanged saves, and notification content. The test rolls back its fixtures.
