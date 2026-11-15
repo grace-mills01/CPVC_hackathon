@@ -3,7 +3,7 @@ import React from 'react';
 import { profileActivity } from '../lib/profile.js';
 
 export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover}) {
-  const {upcoming, sports, sessions, people} = profileActivity(games, roster, userId);
+  const {upcoming, sports, sessions} = profileActivity(games, roster, userId);
   const initials = profile.display_name.trim().split(/\s+/).slice(0,2).map(word => word[0]).join('');
   return <section className="profile-page" aria-label="Your profile">
     <Button variant="icon" className="profile-settings" onClick={onEdit} aria-label="Edit profile">
@@ -16,7 +16,7 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
       <p className="profile-tagline">{profile.bio || 'Your next connection starts here.'}</p>
     </div>
     <dl className="profile-stats">
-      {[[sports,'Activities tried'],[sessions,'Sessions'],[people,'People played with']].map(([value,label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+      {[[sports,'Activities tried'],[sessions,'Sessions']].map(([value,label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
     </dl>
     <section className="profile-upcoming" aria-labelledby="profile-upcoming-title">
       <h3 id="profile-upcoming-title">Upcoming</h3>
