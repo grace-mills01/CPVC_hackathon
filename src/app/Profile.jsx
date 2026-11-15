@@ -1,5 +1,6 @@
 import Button from '../components/Button.jsx';
 import React from 'react';
+import ProfileBadges from '../components/ProfileBadges.jsx';
 import { profileActivity } from '../lib/profile.js';
 
 export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover}) {
@@ -18,6 +19,7 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
     <dl className="profile-stats">
       {[[sports,'Activities tried'],[sessions,'Sessions']].map(([value,label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
     </dl>
+    <ProfileBadges games={games} roster={roster} userId={userId}/>
     <section className="profile-upcoming" aria-labelledby="profile-upcoming-title">
       <h3 id="profile-upcoming-title">Upcoming</h3>
       <div className="profile-plans">{upcoming.map(game => <Button variant="plan" className="profile-plan" key={game.id} onClick={()=>onOpen(game)}>
