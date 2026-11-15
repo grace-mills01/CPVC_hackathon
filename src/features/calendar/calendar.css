@@ -5,3 +5,9 @@
 .add-to-calendar-buttons .button,.calendar-subscribe-buttons .button{flex:1 1 120px;min-height:40px;padding:10px 12px;font-size:14px}
 .calendar-subscribe{padding-top:6px}
 .calendar-subscribe .avail-note{margin:10px 0}
+.find-time{display:grid;gap:10px;margin:-2px 0 6px}
+.find-time-results{display:grid;gap:8px}
+.find-time-intro,.find-time-note{margin:0;font-size:12px;color:var(--muted)}
+.find-time .button.find-time-option{display:grid;gap:2px;justify-items:start;text-align:left;border-radius:14px;padding:10px 14px}
+.find-time-option strong{font-size:14px}
+.find-time-option span{font-size:12px;font-weight:500;opacity:.85}
