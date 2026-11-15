@@ -1,7 +1,7 @@
 // Database and auth calls for onboarding and matching. UI components call these
 // instead of talking to Supabase directly.
 import { supabase } from '../../lib/supabase.js';
-import { GOOGLE_FREEBUSY_SCOPE, fetchGoogleBusy } from './availability.js';
+import { GOOGLE_SCOPES, fetchGoogleBusy } from './availability.js';
 
 function check({ data, error }) {
   if (error) throw error;
@@ -51,7 +51,7 @@ const RETURN_KEY = 'togo:onboarding-return';
 export async function connectGoogleCalendar() {
   try { localStorage.setItem(RETURN_KEY, 'calendar'); } catch { /* storage unavailable */ }
   const options = {
-    scopes: GOOGLE_FREEBUSY_SCOPE,
+    scopes: GOOGLE_SCOPES,
     redirectTo: window.location.origin + window.location.pathname
   };
   const linked = await supabase.auth.linkIdentity({ provider: 'google', options });
@@ -71,10 +71,10 @@ export function consumeGoogleReturn() {
 
 /** Pulls busy times from Google and replaces the previously synced set. */
 export async function syncGoogleBusy(userId, providerToken) {
-  const blocks = await fetchGoogleBusy(providerToken);
+  const { blocks, calendars } = await fetchGoogleBusy(providerToken);
   check(await supabase.from('busy_blocks').delete().eq('user_id', userId).eq('source', 'google'));
   if (blocks.length) check(await supabase.from('busy_blocks').insert(blocks.map(b => ({ ...b, user_id: userId, source: 'google' }))));
-  return blocks;
+  return { blocks, calendars };
 }
 
 // ---- Busy blocks (Google, calendar link, and one-off manual blocks) ----

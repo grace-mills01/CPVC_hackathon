@@ -79,9 +79,9 @@ export default function AvailabilityEditor({ session, returnedFromGoogle = false
       const [w, b, f] = await Promise.all([api.loadWeeklyBusy(), api.loadBusyBlocks(), api.loadCalendarFeed()]);
       setWeekly(w); setBlocks(b); setFeed(f);
       if (returnedFromGoogle && session.provider_token) {
-        const synced = await api.syncGoogleBusy(userId, session.provider_token);
+        const { blocks: synced, calendars } = await api.syncGoogleBusy(userId, session.provider_token);
         await reloadBlocks();
-        setNotice(`Google Calendar connected · ${synced.length} busy ${synced.length === 1 ? 'time' : 'times'} in the next 4 weeks`);
+        setNotice(`Google Calendar connected · checked ${calendars} ${calendars === 1 ? 'calendar' : 'calendars'} · ${synced.length} busy ${synced.length === 1 ? 'time' : 'times'} in the next 4 weeks`);
       } else if (returnedFromGoogle) {
         throw new Error('Google didn’t share calendar access. Try connecting again.');
       }

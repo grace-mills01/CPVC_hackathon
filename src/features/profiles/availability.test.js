@@ -25,20 +25,51 @@ test('manual entry validation', () => {
   assert.equal(validateWeeklyEntry({ weekdays: [1], start_time: '10:00', end_time: '11:00' }), '');
 });
 
-test('Google free/busy response becomes busy blocks', async () => {
-  let sent;
-  const fetchImpl = async (url, init) => {
-    sent = { url, init };
-    return { ok: true, json: async () => ({ calendars: { primary: { busy: [{ start: '2026-11-17T18:00:00Z', end: '2026-11-17T19:00:00Z' }] } } }) };
+function googleMock({ list, busy, listOk = true }) {
+  const calls = [];
+  const fetchImpl = async (url, init = {}) => {
+    calls.push({ url, init });
+    if (url.includes('/calendarList')) return { ok: listOk, json: async () => ({ items: list }) };
+    const ids = JSON.parse(init.body).items.map(i => i.id);
+    return { ok: true, json: async () => ({ calendars: Object.fromEntries(ids.map(id => [id, busy[id] || { busy: [] }])) }) };
   };
-  const blocks = await fetchGoogleBusy('token-123', { from: new Date('2026-11-16T00:00:00Z'), fetchImpl });
-  assert.equal(sent.init.headers.Authorization, 'Bearer token-123');
-  assert.deepEqual(JSON.parse(sent.init.body).items, [{ id: 'primary' }]);
-  assert.deepEqual(blocks, [{ starts_at: '2026-11-17T18:00:00.000Z', ends_at: '2026-11-17T19:00:00.000Z' }]);
+  return { fetchImpl, calls };
+}
+
+test('Google sync checks every visible calendar and merges their busy times', async () => {
+  const { fetchImpl, calls } = googleMock({
+    list: [
+      { id: 'mel@gmail.com', primary: true, selected: true },
+      { id: 'classes123@group.calendar.google.com', selected: true },
+      { id: 'hidden@group.calendar.google.com', selected: false },
+      { id: 'en.usa#holiday@group.v.calendar.google.com', selected: true }
+    ],
+    busy: {
+      primary: { busy: [{ start: '2026-11-17T18:00:00Z', end: '2026-11-17T19:00:00Z' }] },
+      'classes123@group.calendar.google.com': { busy: [{ start: '2026-11-17T18:30:00Z', end: '2026-11-17T20:00:00Z' }, { start: '2026-11-18T17:00:00Z', end: '2026-11-18T18:00:00Z' }] }
+    }
+  });
+  const { blocks, calendars } = await fetchGoogleBusy('token-123', { from: new Date('2026-11-16T00:00:00Z'), fetchImpl });
+  const freeBusy = calls.find(c => c.url.endsWith('/freeBusy'));
+  assert.equal(freeBusy.init.headers.Authorization, 'Bearer token-123');
+  assert.deepEqual(JSON.parse(freeBusy.init.body).items, [{ id: 'primary' }, { id: 'classes123@group.calendar.google.com' }]);
+  assert.equal(calendars, 2);
+  assert.deepEqual(blocks, [
+    { starts_at: '2026-11-17T18:00:00.000Z', ends_at: '2026-11-17T20:00:00.000Z' },
+    { starts_at: '2026-11-18T17:00:00.000Z', ends_at: '2026-11-18T18:00:00.000Z' }
+  ]);
+});
+
+test('Google sync falls back to the main calendar without list permission', async () => {
+  const { fetchImpl, calls } = googleMock({ listOk: false, busy: { primary: { busy: [] } } });
+  const { blocks, calendars } = await fetchGoogleBusy('t', { fetchImpl });
+  assert.deepEqual(JSON.parse(calls[1].init.body).items, [{ id: 'primary' }]);
+  assert.equal(calendars, 1);
+  assert.deepEqual(blocks, []);
 });
 
 test('Google errors surface a friendly message', async () => {
-  await assert.rejects(fetchGoogleBusy('x', { fetchImpl: async () => ({ ok: false }) }), /Google Calendar/);
+  await assert.rejects(fetchGoogleBusy('x', { fetchImpl: async url => url.includes('calendarList') ? { ok: false } : { ok: false } }), /Google Calendar/);
 });
 
 test('one-time blocks use local time and reject bad input', async () => {
