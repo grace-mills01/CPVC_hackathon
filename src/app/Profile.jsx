@@ -1,3 +1,4 @@
+import { coverColor } from '../lib/covers.js';
 import Button from '../components/Button.jsx';
 import React from 'react';
 import ProfileBadges from '../components/ProfileBadges.jsx';
@@ -24,7 +25,7 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
     <section className="profile-upcoming" aria-labelledby="profile-upcoming-title">
       <h3 id="profile-upcoming-title">Upcoming</h3>
       <div className="profile-plans">{upcoming.map(game => <Button variant="plan" className="profile-plan" key={game.id} onClick={()=>onOpen(game)}>
-        <span className={`profile-plan-thumb ${/beach|volley/i.test(game.sport) ? 'profile-plan-beach' : ''}`} aria-hidden="true">{game.image_url ? <img src={game.image_url} alt=""/> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16m4 4h4"/></svg>}</span>
+        <span className={`profile-plan-thumb ${/beach|volley/i.test(game.sport) ? 'profile-plan-beach' : ''}`} style={{background:coverColor(game)}} aria-hidden="true">{game.image_url ? <img src={game.image_url} alt=""/> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16m4 4h4"/></svg>}</span>
         <span className="profile-plan-copy"><strong>{game.title}</strong><span>{new Date(game.starts_at).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})} · {new Date(game.starts_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})} · {game.venue}</span></span>
         <span className="profile-plan-arrow" aria-hidden="true">›</span>
       </Button>)}</div>

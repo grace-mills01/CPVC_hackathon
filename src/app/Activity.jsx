@@ -1,3 +1,4 @@
+import { coverStyle } from '../lib/covers.js';
 import Button from '../components/Button.jsx';
 import React from 'react';
 
@@ -10,7 +11,7 @@ const paths = {
  spark: <><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2Z"/></>
 };
 function Icon({name}) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>; }
-function Hero({game,children}) {return <div className={`activity-hero ${/volley|beach/i.test(game.sport)?'activity-beach':''}`} style={game.image_url?{backgroundImage:`linear-gradient(0deg,#0c1011,transparent),url("${game.image_url}")`}:undefined}><span className="activity-category">{game.sport}</span>{children}<div className="activity-tags">{game.skill_level&&<span className="activity-skill">{game.skill_level.replaceAll('_',' ')}</span>}<span>Come meet your people</span></div></div>}
+function Hero({game,children}) {return <div className={`activity-hero ${/volley|beach/i.test(game.sport)?'activity-beach':''}`} style={coverStyle(game)}><span className="activity-category">{game.sport}</span>{children}<div className="activity-tags">{game.skill_level&&<span className="activity-skill">{game.skill_level.replaceAll('_',' ')}</span>}<span>Come meet your people</span></div></div>}
 function DetailRow({icon,title,children}) {return <div className="activity-info"><Icon name={icon}/><div><strong>{title}</strong>{children&&<div className="activity-subtext">{children}</div>}</div></div>}
 export function ActivityCard({game,count,onOpen,actions}) {return <article className="activity-card"><Button variant="card" className="activity-open" onClick={onOpen}><Hero game={game}><h3>{game.title}</h3></Hero><div className="activity-card-summary"><span>{game.venue}</span><span>{new Date(game.starts_at).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · {count} / {game.capacity} spots filled</span></div></Button><div className="activity-card-actions row">{actions}</div></article>}
 export function ActivityDetail({game,count,host,onBack,actions}) {
