@@ -20,4 +20,4 @@
 .button:disabled{opacity:.55;cursor:default}
 .button:focus-visible{outline:2px solid #d5e769;outline-offset:3px}
 
-.button--send{background:#b9ddf2;color:#142d3c;border-radius:50%}.button--send:hover:enabled{background:#d1eafa}.button--send:disabled{opacity:.5}
+.button.button--send{display:grid;place-items:center;padding:0;line-height:1;background:#b9ddf2;color:#142d3c;border-radius:50%}.button--send:hover:enabled{background:#d1eafa}.button--send:disabled{opacity:.5}

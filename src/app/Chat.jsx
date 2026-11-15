@@ -37,7 +37,7 @@ export default function Chat({ game, messages, userId, count, onBack, onDetails,
   </div>
   <form className="chat-composer" onSubmit={submit}>
    <input name="body" aria-label="Message the group" placeholder="Message the group…" autoComplete="off" required maxLength={1000} value={draft} onChange={e=>setDraft(e.target.value)} disabled={sending}/>
-   <Button variant="send" type="submit" className="chat-send" disabled={sending||!draft.trim()} aria-label={sending?'Sending message':'Send message'}><svg viewBox="0 0 24 24"><path d="m4 3 17 9-17 9 4-9-4-9Zm4 9h13"/></svg></Button>
+   <Button variant="send" type="submit" className="chat-send" disabled={sending||!draft.trim()} aria-label={sending?'Sending message':'Send message'}><svg viewBox="0 0 25 24" aria-hidden="true"><path d="m4 3 17 9-17 9 4-9-4-9Zm4 9h13"/></svg></Button>
   </form>
  </section>;
 }
