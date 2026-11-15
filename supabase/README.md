@@ -33,3 +33,8 @@ Deploy it with `supabase functions deploy sync-calendar-feed` (JWT verification 
 4. Caches picks for 30 minutes unless inputs change, and creates notifications for strong new matches and nearly-full activities.
 
 To turn on AI-written reasons, create a free key at console.groq.com, then in Supabase go to **Edge Functions → Secrets** and add `GROQ_API_KEY`. Optional: `GROQ_MODEL` to force a model. By default it tries `openai/gpt-oss-120b`, then `openai/gpt-oss-20b`, then asks Groq which chat models are available, since Groq retires models over time. The LLM receives the user's first name, interests, goals, and activity details only.
+
+## Add to my calendar
+
+- **One activity:** after joining (or when hosting), the activity page shows **Add to your calendar → Google** (opens Google Calendar prefilled) or **Apple / Outlook** (downloads a `.ics` file).
+- **Automatic:** under Profile → Calendar & availability, **Show your ToGo plans in your calendar** gives each user a private feed link to subscribe to in Google, Apple, or Outlook. The `calendar-feed` edge function (`migrations/20261115030000_calendar_export.sql`, JWT verification **off**, because calendar apps can't log in) serves the activities the user joined or hosts, authorized only by a 48-character random token. Users can reset the link. Optional secret: `SITE_URL` (defaults to the live site) for the link inside each event.

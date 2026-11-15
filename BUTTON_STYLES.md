@@ -19,6 +19,8 @@ Use `src/components/Button.jsx` for every button. Choose a semantic `variant` ra
 | conversation | Open conversation row |
 | plan | Open profile plan or matching-settings row |
 | chip | Toggle pill: interests, weekdays, calendar app, filters; set `aria-pressed` |
+| calendar | Add to Google/Apple/Outlook Calendar and calendar-feed actions |
+| link | Inline text action inside a sentence, e.g. "reset it" |
 | notice | Open a notification row; add `unread` for new ones |
 | choice | Toggle tile with an icon: onboarding goals; set `aria-pressed` |
 
