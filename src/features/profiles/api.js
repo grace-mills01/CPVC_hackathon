@@ -44,20 +44,39 @@ export async function deleteWeeklyBusy(id) {
 const RETURN_KEY = 'togo:onboarding-return';
 
 /**
- * Sends the user to Google to share free/busy access. Links Google to the
- * current account the first time; afterwards signs in with the linked identity
- * to get a fresh access token.
+ * Sends the user to Google to share free/busy access. The first time, it links
+ * Google to the current ToGo account. Once Google is linked, it signs in with
+ * that Google identity instead (same ToGo account) to get a fresh access token;
+ * linking again would fail with "identity already exists".
  */
 export async function connectGoogleCalendar() {
   try { localStorage.setItem(RETURN_KEY, 'calendar'); } catch { /* storage unavailable */ }
   const options = {
     scopes: GOOGLE_SCOPES,
-    redirectTo: window.location.origin + window.location.pathname
+    redirectTo: window.location.origin + window.location.pathname,
+    queryParams: { prompt: 'consent', include_granted_scopes: 'true' }
   };
-  const linked = await supabase.auth.linkIdentity({ provider: 'google', options });
-  if (!linked.error) return;
-  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options });
+  const { data } = await supabase.auth.getUserIdentities();
+  const alreadyLinked = data?.identities?.some(i => i.provider === 'google');
+  const { error } = alreadyLinked
+    ? await supabase.auth.signInWithOAuth({ provider: 'google', options })
+    : await supabase.auth.linkIdentity({ provider: 'google', options });
   if (error) throw error;
+}
+
+/**
+ * Reads an auth error Supabase put in the URL after a Google redirect, removes
+ * it from the address bar, and returns a friendly message (or '').
+ */
+export function consumeAuthRedirectError() {
+  const params = new URLSearchParams(window.location.search + '&' + window.location.hash.slice(1));
+  const code = params.get('error_code') || params.get('error');
+  if (!code) return '';
+  window.history.replaceState(null, '', window.location.pathname);
+  if (code === 'identity_already_exists') return 'That Google account is already linked to ToGo. Tap Connect again to refresh your calendar.';
+  if (code === 'manual_linking_disabled') return 'Google linking is turned off in Supabase. Turn on “Allow manual linking” in Authentication settings.';
+  if (code === 'access_denied') return 'Google access wasn’t granted. Tap Connect and allow calendar access.';
+  return params.get('error_description')?.replace(/\+/g, ' ') || 'Google sign-in didn’t finish. Try connecting again.';
 }
 
 /** True once, right after returning from the Google redirect. */

@@ -83,7 +83,7 @@ export default function AvailabilityEditor({ session, returnedFromGoogle = false
         await reloadBlocks();
         setNotice(`Google Calendar connected · checked ${calendars} ${calendars === 1 ? 'calendar' : 'calendars'} · ${synced.length} busy ${synced.length === 1 ? 'time' : 'times'} in the next 4 weeks`);
       } else if (returnedFromGoogle) {
-        throw new Error('Google didn’t share calendar access. Try connecting again.');
+        throw new Error(api.consumeAuthRedirectError() || 'Google didn’t share calendar access. Try connecting again.');
       }
     });
   }, []);
