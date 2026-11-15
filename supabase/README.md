@@ -32,4 +32,4 @@ Deploy it with `supabase functions deploy sync-calendar-feed` (JWT verification 
 3. Sends the top 8 to an LLM on Groq to re-rank and write one-line reasons, if `GROQ_API_KEY` is set. Otherwise it uses rule-based reasons.
 4. Caches picks for 30 minutes unless inputs change, and creates notifications for strong new matches and nearly-full activities.
 
-To turn on AI-written reasons, create a free key at console.groq.com, then in Supabase go to **Edge Functions → Secrets** and add `GROQ_API_KEY`. Optional: `GROQ_MODEL` (default `llama-3.3-70b-versatile`). The LLM receives the user's first name, interests, goals, and activity details only.
+To turn on AI-written reasons, create a free key at console.groq.com, then in Supabase go to **Edge Functions → Secrets** and add `GROQ_API_KEY`. Optional: `GROQ_MODEL` to force a model. By default it tries `openai/gpt-oss-120b`, then `openai/gpt-oss-20b`, then asks Groq which chat models are available, since Groq retires models over time. The LLM receives the user's first name, interests, goals, and activity details only.

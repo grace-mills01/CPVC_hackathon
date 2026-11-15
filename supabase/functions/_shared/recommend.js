@@ -229,6 +229,22 @@ export function fallbackReason(candidate) {
   return parts.join(', ') + '.';
 }
 
+// ---------- Choosing a Groq model ----------
+
+/** Preferred chat models, best first. Groq retires models, so this is only a starting list. */
+export const PREFERRED_MODELS = Object.freeze(['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b']);
+const NOT_CHAT = /whisper|tts|orpheus|guard|compound|allam|embed|vision|playai/i;
+
+/**
+ * Models to try, in order: an explicit override, the preferred list, then any
+ * other chat model Groq currently lists (from GET /openai/v1/models).
+ */
+export function modelCandidates(override, listed = []) {
+  const available = listed.map(m => m.id || m).filter(id => id && !NOT_CHAT.test(id));
+  const ordered = [override, ...PREFERRED_MODELS.filter(id => !listed.length || available.includes(id)), ...available];
+  return [...new Set(ordered.filter(Boolean))];
+}
+
 // ---------- Notifications ----------
 
 /** Notifications to create for these picks (duplicates are ignored by the database). */

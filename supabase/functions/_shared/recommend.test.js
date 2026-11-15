@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   activityText, buildPrompt, cosine, eligibleActivities, expandWeekly, fallbackReason,
-  notificationsFor, parsePicks, profileText, scheduleContext, scoreCandidate, toBlocks, zonedInstant
+  modelCandidates, notificationsFor, parsePicks, profileText, scheduleContext, scoreCandidate, toBlocks, zonedInstant
 } from './recommend.js';
 
 const TZ = 'America/Los_Angeles';
@@ -100,4 +100,12 @@ test('helpers', () => {
   assert.equal(cosine([1, 0], [0, 1]), 0);
   assert.match(profileText(mel), /Basketball, Running, Coffee.*meet new people, unwind and destress/);
   assert.equal(activityText(game({ description: 'All levels' })), 'Basketball activity: Pickup. All levels. At Rec Center.');
+});
+
+test('Groq model choice survives retired models', () => {
+  assert.deepEqual(modelCandidates(null), ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b']);
+  assert.deepEqual(modelCandidates('my/override'), ['my/override', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b']);
+  // When Groq's live list is known, only listed chat models are tried.
+  const listed = [{ id: 'whisper-large-v3' }, { id: 'openai/gpt-oss-20b' }, { id: 'new/chat-model' }, { id: 'meta-llama/llama-prompt-guard-2-22m' }];
+  assert.deepEqual(modelCandidates(null, listed), ['openai/gpt-oss-20b', 'new/chat-model']);
 });
