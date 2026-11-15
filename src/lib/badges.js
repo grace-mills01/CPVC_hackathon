@@ -1,6 +1,21 @@
 const TIME_ZONE = 'America/Los_Angeles';
 const normalize = value => (value || '').trim().replace(/\s+/g, ' ').toLowerCase();
 
+export function activityBadgeIcon(activity) {
+  const name = normalize(activity);
+  const rules = [
+    [/basketball/, 'basketball'], [/volley/, 'volleyball'], [/soccer|futsal/, 'soccer'],
+    [/football/, 'football'], [/pickleball|ping pong|table tennis/, 'paddle'],
+    [/badminton/, 'shuttle'], [/tennis|racquet|squash/, 'racket'], [/dodgeball/, 'ball'],
+    [/frisbee|ultimate/, 'disc'], [/running|jog|walk/, 'shoe'], [/swim|surf/, 'waves'],
+    [/climb|boulder/, 'mountain'], [/hike|hiking/, 'trail'], [/study|studying/, 'book'],
+    [/coffee|tea/, 'cup'], [/food|dining|cook/, 'utensils'], [/downtown|hangout/, 'city'],
+    [/art|culture|paint|draw/, 'palette'], [/cycl|bik/, 'bike'], [/yoga|fitness|gym/, 'fitness'],
+    [/music|concert/, 'music'], [/social/, 'people'],
+  ];
+  return rules.find(([pattern]) => pattern.test(name))?.[1] || 'spark';
+}
+
 // Achievements reflect completed, non-canceled activities in the user's roster.
 export function activityBadges(games, roster, userId, now = new Date()) {
   if (!userId) return {earned: [], hours: 0, hosted: 0, participated: 0, biggest: 0};
@@ -31,7 +46,7 @@ export function activityBadges(games, roster, userId, now = new Date()) {
   const types = new Map();
   for (const game of completed) if (normalize(game.sport)) types.set(normalize(game.sport), game.sport.trim());
   for (const [key, label] of [...types].sort(([a], [b]) => a.localeCompare(b)))
-    add(`try-${key}`, label, `Complete your first ${label} activity.`, 'spark', 'blue', 'First activity tried');
+    add(`try-${key}`, label, `Complete your first ${label} activity.`, activityBadgeIcon(label), 'blue', 'First activity tried');
   for (const target of [5, 10, 25, 50, 100]) if (biggest >= target)
     add(`crowd-${target}`, target === 5 ? 'Better Together' : target === 10 ? 'In Good Company' : `Crowd Favorite ${target}`, `Complete an activity with at least ${target} people, including you.`, 'people', 'purple', `${target}+ people together`);
   const localMinutes = game => {
@@ -45,5 +60,31 @@ export function activityBadges(games, roster, userId, now = new Date()) {
   const study = completed.filter(game => /\bstudy\b|\bstudying\b/i.test(game.sport || '')).length;
   if (study >= 5) add('study', 'Geek Squad', 'Complete five study sessions.', 'book', 'blue', '5 study sessions');
   if (types.size >= 5) add('explorer', 'Comfort Zone Who?', 'Try five different activity types.', 'compass', 'coral', '5 ways to get out there');
+  const dayFormatter = new Intl.DateTimeFormat('en-CA', {timeZone: TIME_ZONE, year:'numeric', month:'2-digit', day:'2-digit'});
+  const days = new Map();
+  const companions = new Map();
+  const venues = new Set();
+  for (const game of completed) {
+    const parts = dayFormatter.formatToParts(new Date(game.starts_at));
+    const part = type => parts.find(p => p.type === type).value;
+    const date = `${part('year')}-${part('month')}-${part('day')}`;
+    if (!days.has(date)) days.set(date, new Set());
+    if (normalize(game.sport)) days.get(date).add(normalize(game.sport));
+    if (normalize(game.venue)) venues.add(normalize(game.venue));
+    for (const person of members.get(game.id)) if (person !== userId)
+      companions.set(person, (companions.get(person) || 0) + 1);
+  }
+  if ([...days.values()].some(types => types.size >= 3))
+    add('hat-trick', 'Hat Trick', 'Complete three different activity types in one Pacific calendar day.', 'hat', 'gold', '3 types. One day.');
+  if ([...companions.values()].some(count => count >= 5))
+    add('familiar-faces', 'Familiar Faces', 'Complete five activities with the same other person.', 'heart', 'coral', 'From strangers to regulars');
+  if (venues.size >= 5)
+    add('around-town', 'Around Town', 'Complete activities at five different venues.', 'pin', 'mint', '5 places. More stories.');
+  if ([...days.keys()].some(date => {
+    const saturday = new Date(`${date}T12:00:00Z`);
+    if (saturday.getUTCDay() !== 6) return false;
+    saturday.setUTCDate(saturday.getUTCDate() + 1);
+    return days.has(saturday.toISOString().slice(0, 10));
+  })) add('weekend', 'Weekend Warrior', 'Complete activities on Saturday and Sunday of the same weekend, Pacific time.', 'calendar', 'purple', 'A weekend well spent');
   return {earned, hours, hosted, participated, biggest};
 }

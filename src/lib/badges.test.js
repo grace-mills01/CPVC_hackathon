@@ -42,3 +42,28 @@ test('five distinct activities unlock exploration; no user earns nothing', () =>
  assert.ok(activityBadges(games,rosterFor(games),'me',now).earned.some(b=>b.id==='explorer'));
  assert.equal(activityBadges(games,rosterFor(games),null,now).earned.length,0);
 });
+
+test('activity symbols match catalog and custom activities have a fallback', async () => {
+ const {activityBadgeIcon} = await import('./badges.js');
+ const symbols = {'Basketball':'basketball','Beach volleyball':'volleyball','Soccer':'soccer','Futsal':'soccer','Pickleball':'paddle','Badminton':'shuttle','Racquetball':'racket','Dodgeball':'ball','Flag football':'football','Frisbee':'disc','Running':'shoe','Swimming':'waves','Climbing':'mountain','Study group':'book','Coffee':'cup','Food and dining':'utensils','Downtown hangout':'city','Arts and culture':'palette','Other social':'people','Tennis':'racket','Hiking':'trail','Cycling':'bike','Yoga':'fitness','Music':'music'};
+ for (const [name, icon] of Object.entries(symbols)) assert.equal(activityBadgeIcon(` ${name.toUpperCase()} `),icon,name);
+ assert.equal(activityBadgeIcon('Custom mystery activity'),'spark');
+ const games=[game(1,{sport:'Basketball'})];
+ assert.equal(activityBadges(games,rosterFor(games),'me',now).earned.find(b=>b.id==='try-basketball').icon,'basketball');
+});
+test('unique achievements require distinct types, venues, companions and one actual weekend', () => {
+ const games=['Study','Running','Tennis','Swimming','Hiking'].map((sport,id)=>game(id,{sport,venue:`Venue ${id}`,starts_at:id===4?'2026-11-08T18:00:00Z':'2026-11-07T18:00:00Z',ends_at:null}));
+ const roster=[...rosterFor(games),...games.flatMap(g=>[{game_id:g.id,user_id:'friend'},{game_id:g.id,user_id:'friend'}])];
+ const ids=activityBadges(games,roster,'me',now).earned.map(b=>b.id);
+ for (const id of ['hat-trick','familiar-faces','around-town','weekend']) assert.ok(ids.includes(id),id);
+ const repeated=games.map(g=>({...g,sport:'Study',venue:' Venue 1 ',starts_at:'2026-11-07T18:00:00Z'}));
+ const fewer=activityBadges(repeated,roster.slice(0,5),'me',now).earned.map(b=>b.id);
+ for (const id of ['hat-trick','familiar-faces','around-town','weekend']) assert.ok(!fewer.includes(id),id);
+});
+test('weekend achievements do not combine different weekends and days use Pacific time', () => {
+ const dates=['2026-11-08T07:30:00Z','2026-11-16T07:30:00Z']; // Pacific Saturday, following Sunday
+ const games=dates.map((starts_at,id)=>game(id,{starts_at,ends_at:null}));
+ assert.ok(!activityBadges(games,rosterFor(games),'me',new Date('2026-11-20')).earned.some(b=>b.id==='weekend'));
+ games[1].starts_at='2026-11-09T07:30:00Z'; // Pacific Sunday of the same weekend
+ assert.ok(activityBadges(games,rosterFor(games),'me',now).earned.some(b=>b.id==='weekend'));
+});
