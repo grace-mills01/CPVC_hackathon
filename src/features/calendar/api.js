@@ -30,3 +30,15 @@ export function feedLinks(token) {
     google: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`
   };
 }
+
+/** Read every saved busy source for the owner, including dates browsed in the past. */
+export async function loadScheduleAvailability(userId) {
+  const [blocks, weekly] = await Promise.all([
+    supabase.from('busy_blocks').select('id, starts_at, ends_at').eq('user_id', userId),
+    supabase.from('weekly_busy').select('id, weekday, start_time, end_time').eq('user_id', userId)
+  ]);
+  return {
+    blocks: blocks.data || [], weekly: weekly.data || [],
+    error: blocks.error || weekly.error ? 'Some busy times couldn’t load. Reopen Calendar to try again.' : ''
+  };
+}
