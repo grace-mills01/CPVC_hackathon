@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Button from '../../components/Button.jsx';
 import { WEEKDAY_LABELS, expandWeeklyBusy, oneOffBlock, validateWeeklyEntry } from './availability.js';
 import * as api from './api.js';
+import CalendarSubscribe from '../calendar/CalendarSubscribe.jsx';
 
 const PROVIDERS = { apple: 'Apple Calendar', google: 'Google Calendar', outlook: 'Outlook' };
 
@@ -211,5 +212,7 @@ export default function AvailabilityEditor({ session, returnedFromGoogle = false
         <Button variant="quiet" aria-label="Remove" onClick={() => run(async () => { await api.deleteBusyBlock(b.id); setBlocks(list => list.filter(x => x.id !== b.id)); })}>✕</Button>
       </li>)}
     </ul>}
+
+    <CalendarSubscribe userId={userId} />
   </div>;
 }

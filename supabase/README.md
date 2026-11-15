@@ -33,3 +33,12 @@ Deploy it with `supabase functions deploy sync-calendar-feed` (JWT verification 
 4. Caches picks for 30 minutes unless inputs change, and creates notifications for strong new matches and nearly-full activities.
 
 To turn on AI-written reasons, create a free key at console.groq.com, then in Supabase go to **Edge Functions → Secrets** and add `GROQ_API_KEY`. Optional: `GROQ_MODEL` to force a model. By default it tries `openai/gpt-oss-120b`, then `openai/gpt-oss-20b`, then asks Groq which chat models are available, since Groq retires models over time. The LLM receives the user's first name, interests, goals, and activity details only.
+
+## Add to my calendar
+
+- **One activity:** after joining (or when hosting), the activity page shows **Add to your calendar → Google** (opens Google Calendar prefilled) or **Apple / Outlook** (downloads a `.ics` file).
+- **Automatic:** under Profile → Calendar & availability, **Show your ToGo plans in your calendar** gives each user a private feed link to subscribe to in Google, Apple, or Outlook. The `calendar-feed` edge function (`migrations/20261115030000_calendar_export.sql`, JWT verification **off**, because calendar apps can't log in) serves the activities the user joined or hosts, authorized only by a 48-character random token. Users can reset the link. Optional secret: `SITE_URL` (defaults to the live site) for the link inside each event.
+
+## Find the best time (for hosts)
+
+In the Create form, **✦ Find the best time** calls the `suggest-times` edge function (`migrations/20261115040000_find_a_time.sql`, JWT on). It finds people likely to be interested: they listed the activity type, a word from it appears in the activity, or Supabase's built-in `gte-small` model rates their interests and goals as close in meaning (profile embeddings are cached). It then counts how many of them are free in each 30-minute slot over the next week, 7 AM–9:30 PM, using synced calendars and blocked-out times, and suggests up to 4 slots at least 3 hours apart when the host is free. Only counts are returned, never names or schedules. Counts under 3 are hidden, and if fewer than 3 people are interested, no times are compared.

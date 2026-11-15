@@ -19,6 +19,9 @@
 .button.button--notice{background:var(--surface);color:#e3ece8;border-radius:0;padding:14px 16px}
 .button.button--notice.unread{background:#16231f}
 .button.button--notice small{color:var(--muted)}
+.button.button--calendar{background:#1f2a28;color:#cfeee2;border:1px solid #31453f}
+.button.button--link{display:inline;min-height:0;padding:0;background:transparent;color:#98dcc8;font-weight:600;text-decoration:underline;border-radius:0}
+.button.button--suggest{background:transparent;color:#a8ecc6;border:1px dashed #4d8a72;border-radius:999px;font-size:13px;min-height:40px;padding:10px 16px;justify-self:start}
 .button:hover:not(:disabled){filter:brightness(1.08)}
 .button:disabled{opacity:.55;cursor:default}
 .button:focus-visible{outline:2px solid #d5e769;outline-offset:3px}
