@@ -4,7 +4,7 @@ import ProfileBadges from '../components/ProfileBadges.jsx';
 import { profileActivity } from '../lib/profile.js';
 import { editPreferences } from '../features/profiles/OnboardingGate.jsx';
 
-export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover}) {
+export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover, onShowBadges}) {
   const {upcoming, sports, sessions} = profileActivity(games, roster, userId);
   const initials = profile.display_name.trim().split(/\s+/).slice(0,2).map(word => word[0]).join('');
   return <section className="profile-page" aria-label="Your profile">
@@ -20,7 +20,7 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
     <dl className="profile-stats">
       {[[sports,'Activities tried'],[sessions,'Sessions']].map(([value,label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
     </dl>
-    <ProfileBadges games={games} roster={roster} userId={userId}/>
+    <ProfileBadges games={games} roster={roster} userId={userId} onShowAll={onShowBadges}/>
     <section className="profile-upcoming" aria-labelledby="profile-upcoming-title">
       <h3 id="profile-upcoming-title">Upcoming</h3>
       <div className="profile-plans">{upcoming.map(game => <Button variant="plan" className="profile-plan" key={game.id} onClick={()=>onOpen(game)}>
