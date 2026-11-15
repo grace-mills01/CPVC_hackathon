@@ -2,6 +2,7 @@ import Button from '../components/Button.jsx';
 import React from 'react';
 import ProfileBadges from '../components/ProfileBadges.jsx';
 import { profileActivity } from '../lib/profile.js';
+import { editPreferences } from '../features/profiles/OnboardingGate.jsx';
 
 export default function Profile({profile, games, roster, userId, onEdit, onOpen, onDiscover}) {
   const {upcoming, sports, sessions} = profileActivity(games, roster, userId);
@@ -28,6 +29,16 @@ export default function Profile({profile, games, roster, userId, onEdit, onOpen,
         <span className="profile-plan-arrow" aria-hidden="true">›</span>
       </Button>)}</div>
       {!upcoming.length && <div className="profile-empty"><p>No upcoming plans yet.</p><Button variant="secondary" onClick={onDiscover}>Find an activity</Button></div>}
+    </section>
+    <section className="profile-preferences" aria-labelledby="profile-preferences-title">
+      <h3 id="profile-preferences-title">Matching</h3>
+      <div className="profile-plans">{[
+        ['interests', 'Interests & goals', profile.interests?.length ? profile.interests.slice(0, 3).join(' · ') + (profile.interests.length > 3 ? ` +${profile.interests.length - 3}` : '') : 'Tell us what you’re into'],
+        ['calendar', 'Calendar & availability', 'Sync Google or Apple Calendar, or block out times']
+      ].map(([step, title, detail]) => <Button variant="plan" className="profile-plan" key={step} onClick={() => editPreferences(step)}>
+        <span className="profile-plan-copy"><strong>{title}</strong><span>{detail}</span></span>
+        <span className="profile-plan-arrow" aria-hidden="true">›</span>
+      </Button>)}</div>
     </section>
     <section className="profile-about" aria-labelledby="profile-about-title"><h3 id="profile-about-title">About Me</h3><p>{profile.bio || 'Add a bio to let people know what you’re up for.'}</p></section>
   </section>;

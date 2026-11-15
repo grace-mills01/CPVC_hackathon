@@ -77,8 +77,49 @@ export async function syncGoogleBusy(userId, providerToken) {
   return blocks;
 }
 
-export async function loadGoogleBusy() {
-  return check(await supabase.from('busy_blocks').select('starts_at, ends_at').gt('ends_at', new Date().toISOString()).order('starts_at'));
+// ---- Busy blocks (Google, calendar link, and one-off manual blocks) ----
+
+export async function loadBusyBlocks() {
+  return check(await supabase.from('busy_blocks').select('id, starts_at, ends_at, source, label').gt('ends_at', new Date().toISOString()).order('starts_at'));
+}
+
+export async function addManualBlock(userId, { starts_at, ends_at, label }) {
+  return check(await supabase.from('busy_blocks').insert({ user_id: userId, starts_at, ends_at, label: label?.trim() || null, source: 'manual' }).select('id, starts_at, ends_at, source, label').single());
+}
+
+export async function deleteBusyBlock(id) {
+  check(await supabase.from('busy_blocks').delete().eq('id', id));
+}
+
+// ---- Calendar link (Apple iCloud, Google, Outlook) ----
+
+export async function loadCalendarFeed() {
+  return check(await supabase.from('calendar_feeds').select('provider, last_synced_at, last_error').maybeSingle());
+}
+
+/**
+ * Calls the sync-calendar-feed function. Pass {url} to save a new link,
+ * {remove: true} to disconnect, or nothing to re-sync the saved link.
+ */
+export async function syncCalendarFeed(body = {}) {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { data, error } = await supabase.functions.invoke('sync-calendar-feed', { body: { ...body, timeZone } });
+  if (error) {
+    let message = 'Calendar sync failed. Try again.';
+    try { message = (await error.context.json()).error || message; } catch { /* keep default */ }
+    throw new Error(message);
+  }
+  return data;
+}
+
+/** Re-syncs a saved calendar link if it's older than `maxAgeHours`. Never throws. */
+export async function refreshCalendarFeedIfStale(maxAgeHours = 6) {
+  try {
+    const feed = await loadCalendarFeed();
+    if (!feed) return;
+    const age = Date.now() - new Date(feed.last_synced_at || 0).getTime();
+    if (age > maxAgeHours * 3600000) await syncCalendarFeed();
+  } catch { /* background refresh; errors show on the availability screen */ }
 }
 
 // ---- Matching inputs ----

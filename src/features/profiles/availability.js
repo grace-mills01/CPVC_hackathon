@@ -63,3 +63,17 @@ export async function fetchGoogleBusy(accessToken, { from = new Date(), days = 2
   if (calendar?.errors?.length) throw new Error('Google Calendar didn’t share your availability.');
   return (calendar?.busy || []).map(b => ({ starts_at: new Date(b.start).toISOString(), ends_at: new Date(b.end).toISOString() }));
 }
+
+/**
+ * Turns a one-time form entry ({date 'YYYY-MM-DD', start_time, end_time}) into a
+ * busy block in local time. Returns {block} or {error}.
+ */
+export function oneOffBlock({ date, start_time, end_time }, now = new Date()) {
+  if (!date || !start_time || !end_time) return { error: 'Add a date, start time, and end time.' };
+  if (end_time <= start_time) return { error: 'End time must be after the start time.' };
+  const [y, m, d] = date.split('-').map(Number);
+  const at = t => { const [h, mi] = t.split(':').map(Number); return new Date(y, m - 1, d, h, mi); };
+  const start = at(start_time), end = at(end_time);
+  if (end <= now) return { error: 'That time has already passed.' };
+  return { block: { starts_at: start.toISOString(), ends_at: end.toISOString() } };
+}

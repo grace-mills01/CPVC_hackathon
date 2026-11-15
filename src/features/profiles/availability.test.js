@@ -40,3 +40,14 @@ test('Google free/busy response becomes busy blocks', async () => {
 test('Google errors surface a friendly message', async () => {
   await assert.rejects(fetchGoogleBusy('x', { fetchImpl: async () => ({ ok: false }) }), /Google Calendar/);
 });
+
+test('one-time blocks use local time and reject bad input', async () => {
+  const { oneOffBlock } = await import('./availability.js');
+  const now = new Date(2026, 10, 16, 9, 0);
+  const { block } = oneOffBlock({ date: '2026-11-20', start_time: '14:00', end_time: '17:00' }, now);
+  assert.equal(new Date(block.starts_at).getHours(), 14);
+  assert.equal(new Date(block.ends_at).getDate(), 20);
+  assert.match(oneOffBlock({ date: '2026-11-20', start_time: '17:00', end_time: '14:00' }, now).error, /after/);
+  assert.match(oneOffBlock({ date: '2026-11-15', start_time: '10:00', end_time: '11:00' }, now).error, /passed/);
+  assert.match(oneOffBlock({ date: '', start_time: '10:00', end_time: '11:00' }, now).error, /date/);
+});
